@@ -14,7 +14,8 @@ export default {
     return {
       room: null,
       precision: 6, // default precision
-      db: null // assign Firebase SDK later
+      db: null, // assign Firebase SDK later
+      messageInput: ''
     }
   },
   mounted () {
@@ -22,7 +23,7 @@ export default {
       apiKey: '',
       authDomain: 'chat-proj-e47b3.firebaseapp.com',
       databaseURL: 'https://chat-proj-e47b3.firebaseio.com',
-      storageBucket: '',
+      storageBucket: 'chat-proj-e47b3.appspot.com',
       messagingSenderId: '657098277792'
     })
 
@@ -42,6 +43,19 @@ export default {
       } else {
         console.error('Cannot access geolocation')
       }
+    },
+    send(messageInput) {
+      // A data entry.
+      let data = {
+        message: messageInput
+      };
+
+      // Get a key for a new message.
+      let key = this.room.push().key;
+      this.room.child('messages/' + key).set(data)
+
+      // clean the message
+      this.messageInput = ''
     }
   }
 }
