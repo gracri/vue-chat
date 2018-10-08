@@ -1,7 +1,10 @@
 <template>
+  <div>
     <div id="chat">
         <input type="text" v-model.trim="messageInput" @keyup.enter="send(messageInput)">
     </div>
+    <div v-for='msg in messages'>{{msg.message}}</div>
+  </div>
 </template>
 
 <script>
@@ -15,7 +18,8 @@ export default {
       room: null,
       precision: 6, // default precision
       db: null, // assign Firebase SDK later
-      messageInput: ''
+      messageInput: '',
+      messages: []
     }
   },
   mounted () {
@@ -37,6 +41,8 @@ export default {
 
           // initilize the room based on geohash
           this.room = this.db.database().ref().child('rooms/' + geohash)
+          this.messageListener()
+
         }, (err) => {
           // error handling here
         })
@@ -56,6 +62,12 @@ export default {
 
       // clean the message
       this.messageInput = ''
+    },
+    messageListener () {
+      this.room.child('messages').on('child_added', (snapshot) => {
+      // push the snapshot value into a data attribute
+      this.messages.push(snapshot.val())
+      })
     }
   }
 }
