@@ -1,31 +1,47 @@
 <template>
-  <div id="app">
-    <img src="./assets/logo.png">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
-  </div>
+    <div id="chat">
+        <input type="text" v-model.trim="messageInput" @keyup.enter="send(messageInput)">
+    </div>
 </template>
 
 <script>
+import * as Firebase from 'firebase'
+import Geohash from 'latlon-geohash'
 
 export default {
-  name: 'app',
+  name: 'chat',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      room: null,
+      precision: 6, // default precision
+      db: null // assign Firebase SDK later
+    }
+  },
+  mounted () {
+    this.db = Firebase.initializeApp({
+      apiKey: '',
+      authDomain: 'chat-proj-e47b3.firebaseapp.com',
+      databaseURL: 'https://chat-proj-e47b3.firebaseio.com',
+      storageBucket: '',
+      messagingSenderId: '657098277792'
+    })
+
+    this.init()
+  },
+  methods: {
+    init() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          var geohash = Geohash.encode(position.coords.latitude, position.coords.longitude, this.precision);
+
+          // initilize the room based on geohash
+          this.room = this.db.database().ref().child('rooms/' + geohash)
+        }, (err) => {
+          // error handling here
+        })
+      } else {
+        console.error('Cannot access geolocation')
+      }
     }
   }
 }
